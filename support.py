@@ -73,7 +73,7 @@ def handle_menu_clicks(call):
     elif call.data == "menu_faq":
         faq_text = (
             "⚡ <b>Quick FAQs</b>\n\n"
-            "• <b>How to access quizzes?</b> Use our main bot @EthioEntranceIQ_bot.\n"
+            "• <b>How to access Exam Questions?</b> Use our main bot @EthioEntranceIQ_bot.\n"
             "• <b>Payment methods?</b> We accept telebirr and direct bank transfers."
         )
         bot.send_message(call.message.chat.id, faq_text, parse_mode="HTML", reply_markup=get_main_keyboard())
