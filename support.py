@@ -88,8 +88,7 @@ def handle_menu_clicks(call):
         bot.send_message(call.message.chat.id, tutor_text, parse_mode="HTML")
         
     elif call.data == "menu_bug":
-        bot.send_message(call.message.chat.id, "🎧 <b>Support Team</b>\n\n How can we help you?
-Please describe your issue, question, or request in as much detail as possible. Our support team will review your message and assist you as quickly as possible.", parse_mode="HTML")
+        bot.send_message(call.message.chat.id, "🎧 <b>Support Team</b>\n\n How can we help you?", parse_mode="HTML")
         
     elif call.data == "menu_human":
         bot.send_message(call.message.chat.id, "💬 <b>Connecting to Support...</b>\n\nPlease type your message below. An admin will respond shortly.", parse_mode="HTML")
