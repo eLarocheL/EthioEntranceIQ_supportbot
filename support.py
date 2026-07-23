@@ -1,132 +1,173 @@
-import telebot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+import logging
 import os
-import re
-import threading
+from threading import Thread
 from flask import Flask
 
-# ==========================================
-# 1. CONFIGURATION & FLASK DUMMY SERVER
-# ==========================================
-BOT_TOKEN = os.environ.get('SUPPORT_BOT_TOKEN')
-ADMIN_ID = 7365557461  # Replace with your Telegram ID
-bot = telebot.TeleBot(BOT_TOKEN)
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import (
+    ApplicationBuilder,
+    CallbackQueryHandler,
+    CommandHandler,
+    ContextTypes,
+    MessageHandler,
+    filters,
+)
 
-# Dummy Flask App to keep Render service active
-app = Flask(__name__)
+# ---------------------------------------------------------------------------
+# 1. FLASK DUMMY SERVER (For Render Background Worker Keep-Alive)
+# ---------------------------------------------------------------------------
+web_app = Flask(__name__)
 
-@app.route('/')
+@web_app.route('/')
 def home():
-    return "Bot is awake!"
+    return "EthioEntranceIQ Support Bot is running smoothly!"
 
-# ==========================================
-# 2. AUTOMATED SELF-SERVICE MENU
-# ==========================================
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-    # Build an interactive Inline Keyboard menu
-    markup = InlineKeyboardMarkup()
-    markup.row(InlineKeyboardButton("👨‍🏫 Request Personal Tutor", callback_data="menu_tutor"))
-    markup.row(
-        InlineKeyboardButton("🐛 Report Bug", callback_data="menu_bug"),
-        InlineKeyboardButton("❓ FAQs", callback_data="menu_faq")
-    )
-    markup.row(InlineKeyboardButton("💬 Talk to a Human", callback_data="menu_human"))
-    
-    welcome_text = (
-        "👋 <b>Welcome to EthioEntranceIQ Support!</b>\n\n"
-        "I am your automated assistant. Please choose an option below so I can route your request instantly:"
-    )
-    bot.send_message(message.chat.id, welcome_text, reply_markup=markup, parse_mode="HTML")
+def run_flask():
+    port = int(os.environ.get("PORT", 8080))
+    web_app.run(host="0.0.0.0", port=port)
 
-# ==========================================
-# 3. HANDLE AUTOMATED BUTTON CLICKS
-# ==========================================
-@bot.callback_query_handler(func=lambda call: call.data.startswith("menu_"))
-def handle_menu_clicks(call):
-    # Acknowledge the button click to stop the loading animation on the user's screen
-    bot.answer_callback_query(call.id)
-    
-    if call.data == "menu_faq":
-        faq_text = (
-            "❓ <b>Frequently Asked Questions</b>\n\n"
-            "<b>Q: How do I take a quiz?</b>\n"
-            "A: Go to our main bot and send /start.\n\n"
-            "<b>Q: Is the bot free?</b>\n"
-            "A: Yes, all standard quizzes are currently free!"
+# ---------------------------------------------------------------------------
+# 2. LOGGING CONFIGURATION
+# ---------------------------------------------------------------------------
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
+ADMIN_CHAT_ID = os.environ.get("ADMIN_CHAT_ID", "YOUR_ADMIN_CHAT_ID_HERE")
+
+# ---------------------------------------------------------------------------
+# 3. INTERFACE CONSTANTS (Option 1 Aesthetic)
+# ---------------------------------------------------------------------------
+MAIN_MENU_TEXT = (
+    "⚡ <b>EthioEntranceIQ Support</b>\n\n"
+    "Select an option below for immediate routing:"
+)
+
+TUTOR_PROMPT_TEXT = (
+    "🎓 <b>Tutor Matching</b>\n\n"
+    "Please reply to this message with the following details so we can find your ideal tutor:\n\n"
+    "🏫 <b>Grade Level:</b> \n"
+    "📍 <b>Address:</b> "
+)
+
+CHAT_CLOSED_TEXT = (
+    "✅ <b>Ticket Closed</b>\n\n"
+    "Your request has been resolved. If you need anything else, feel free to start a new chat anytime."
+)
+
+# Keyboards
+def get_main_keyboard():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🎓 Request Tutor", callback_data="req_tutor")],
+        [InlineKeyboardButton("💬 Talk to Admin", callback_data="talk_admin")],
+        [
+            InlineKeyboardButton("⚡ Quick FAQs", callback_data="faqs"),
+            InlineKeyboardButton("🐞 Report Bug", callback_data="report_bug")
+        ]
+    ])
+
+def get_restart_keyboard():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("➕ Start New Chat", callback_data="main_menu")]
+    ])
+
+# ---------------------------------------------------------------------------
+# 4. BOT HANDLERS
+# ---------------------------------------------------------------------------
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Sends the main sharp Option 1 menu."""
+    if update.message:
+        await update.message.reply_text(
+            MAIN_MENU_TEXT,
+            parse_mode="HTML",
+            reply_markup=get_main_keyboard()
         )
-        bot.send_message(call.message.chat.id, faq_text, parse_mode="HTML")
-        
-    elif call.data == "menu_tutor":
-        tutor_text = (
-            "👨‍🏫 <b>Tutor Request</b>\n\n"
-            "Please type your Grade, Subject, and what you need help with. "
-            "I will automatically forward it to our tutor matching team!"
-        )
-        bot.send_message(call.message.chat.id, tutor_text, parse_mode="HTML")
-        
-    elif call.data == "menu_bug":
-        bot.send_message(call.message.chat.id, "🐛 Please describe the bug you found, and I will create an automated ticket for the developers.")
-        
-    elif call.data == "menu_human":
-        bot.send_message(call.message.chat.id, "💬 Please type your message below. An admin will reply to you shortly.")
 
-# ==========================================
-# 4. ZERO-FRICTION ADMIN REPLIES
-# ==========================================
-# Listening for admin replies natively in Telegram
-@bot.message_handler(func=lambda message: message.chat.id == ADMIN_ID and message.reply_to_message is not None)
-def automated_admin_reply(message):
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handles inline button clicks."""
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == "main_menu":
+        await query.message.reply_text(
+            MAIN_MENU_TEXT,
+            parse_mode="HTML",
+            reply_markup=get_main_keyboard()
+        )
+    elif query.data == "req_tutor":
+        await query.message.reply_text(
+            TUTOR_PROMPT_TEXT,
+            parse_mode="HTML"
+        )
+    elif query.data == "talk_admin":
+        await query.message.reply_text(
+            "💬 <b>Connecting to Support...</b>\n\n"
+            "Please type your message below. An admin will respond shortly.",
+            parse_mode="HTML"
+        )
+    elif query.data == "faqs":
+        await query.message.reply_text(
+            "⚡ <b>Quick FAQs</b>\n\n"
+            "• How to access quizzes? Use our main bot @EthioEntranceIQ_bot.\n"
+            "• Payment methods? We accept telebirr and direct bank transfers.",
+            parse_mode="HTML",
+            reply_markup=get_main_keyboard()
+        )
+    elif query.data == "report_bug":
+        await query.message.reply_text(
+            "🐞 <b>Report Bug</b>\n\n"
+            "Please describe the error or bug you encountered in detail.",
+            parse_mode="HTML"
+        )
+
+async def close_chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Admin command to close a user's ticket: /close <user_chat_id>
+    Sends the user the close message and a 'Start New Chat' button.
+    """
+    if str(update.effective_user.id) != str(ADMIN_CHAT_ID):
+        return
+
+    if not context.args:
+        await update.message.reply_text("Usage: `/close <user_chat_id>`", parse_mode="Markdown")
+        return
+
+    target_user_id = context.args[0]
+    
     try:
-        # Extract the hidden User ID from the original message text
-        original_text = message.reply_to_message.text
-        
-        # Regex to match the embedded ID
-        match = re.search(r'ID:\s*(\d+)', original_text)
-        
-        if match:
-            user_id = int(match.group(1))
-            admin_response = message.text
-            
-            # Route text back to user
-            bot.send_message(user_id, f"👨‍💻 <b>Support Team:</b>\n\n{admin_response}", parse_mode="HTML")
-            bot.reply_to(message, "✅ <i>Reply instantly routed to user.</i>", parse_mode="HTML")
-        else:
-            bot.reply_to(message, "⚠️ Could not detect User ID. Are you replying to a formatted support ticket?")
-            
+        # Send closing notice to user
+        await context.bot.send_message(
+            chat_id=target_user_id,
+            text=CHAT_CLOSED_TEXT,
+            parse_mode="HTML",
+            reply_markup=get_restart_keyboard()
+        )
+        # Confirm to admin
+        await update.message.reply_text(f"✅ Ticket for user `{target_user_id}` closed successfully.")
     except Exception as e:
-        bot.reply_to(message, f"⚠️ Error sending reply: {e}")
+        await update.message.reply_text(f"⚠️ Failed to close chat: {str(e)}")
 
-# ==========================================
-# 5. AUTOMATED TICKET ROUTING (USER -> ADMIN)
-# ==========================================
-@bot.message_handler(func=lambda message: message.chat.id != ADMIN_ID)
-def forward_to_admin(message):
-    ticket_format = (
-        f"🚨 <b>NEW SUPPORT TICKET</b>\n"
-        f"<b>From:</b> {message.from_user.first_name}\n"
-        f"<b>ID:</b> {message.chat.id}\n"
-        f"<b>Username:</b> @{message.from_user.username}\n\n"
-        f"<b>Message:</b>\n{message.text}"
-    )
-    
-    # Send ticket to admin
-    bot.send_message(ADMIN_ID, ticket_format, parse_mode="HTML")
-    
-    # Confirmation to user
-    bot.reply_to(message, "✅ Your message has been logged and sent to our team. We will notify you here when we reply.")
+# ---------------------------------------------------------------------------
+# 5. MAIN APPLICATION
+# ---------------------------------------------------------------------------
+def main():
+    # Start Flask Web Server in a parallel thread
+    t = Thread(target=run_flask)
+    t.daemon = True
+    t.start()
 
-# ==========================================
-# 6. THREADING EXECUTION (BOT + FLASK)
-# ==========================================
-def run_bot():
-    print("Automated Support Bot is running...")
-    bot.infinity_polling()
+    # Build Telegram Bot
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+    # Register Handlers
+    app.add_handler(CommandHandler("start", start_command))
+    app.add_handler(CommandHandler("close", close_chat_command))
+    app.add_handler(CallbackQueryHandler(button_handler))
+
+    # Run Bot
+    app.run_polling()
 
 if __name__ == "__main__":
-    # Start the Telegram bot loop in a background thread
-    threading.Thread(target=run_bot, daemon=True).start()
-    
-    # Start the Flask web server listening on the port provided by Render
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
+    main()
