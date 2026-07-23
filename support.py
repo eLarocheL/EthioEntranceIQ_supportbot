@@ -30,7 +30,7 @@ def get_main_keyboard():
     markup.row(InlineKeyboardButton("🎓 የግል አስጠኚ እፈልጋለሁ", callback_data="menu_tutor"))
     markup.row(InlineKeyboardButton("💬 አስጠኚ ለመሆን", callback_data="menu_human"))
     markup.row(
-        InlineKeyboardButton("⚡ 🤖 ስለቦቱ", callback_data="menu_faq"),
+        InlineKeyboardButton("⚡Entrance Exam", callback_data="menu_faq"),
         InlineKeyboardButton("🎧 Support Team", callback_data="menu_bug")
     )
     return markup
@@ -75,7 +75,7 @@ def handle_menu_clicks(call):
         
     elif call.data == "menu_faq":
         faq_text = (
-            "⚡ <b>ቦቱ</b>\n\n"
+            "⚡ <b>Entrance Exam</b>\n\n"
             "• <b>የዩኒቨርሲቲ መግቢያ ፈተናን እንዴት ማግኘት እችላለሁ?</b> 👉 ዋናውን ቦታችን @EthioEntranceIQ_bot ይጠቀሙ።\n"
         )
         bot.send_message(call.message.chat.id, faq_text, parse_mode="HTML", reply_markup=get_main_keyboard())
@@ -90,10 +90,10 @@ def handle_menu_clicks(call):
         bot.send_message(call.message.chat.id, tutor_text, parse_mode="HTML")
         
     elif call.data == "menu_bug":
-        bot.send_message(call.message.chat.id, "🎧 <b>Support Team</b>\n\n How can we help you?", parse_mode="HTML")
+        bot.send_message(call.message.chat.id, "🎧 <b>Support Team</b>\n\n Become a Tutor", parse_mode="HTML")
         
     elif call.data == "menu_human":
-        bot.send_message(call.message.chat.id, "💬 <b>Connecting to Support...</b>\n\nPlease type your message below. An admin will respond shortly.", parse_mode="HTML")
+        bot.send_message(call.message.chat.id, "💬 <b>Connecting to Support...</b>\n\nTo apply as a tutor, please enter your address and your education level (University Student, Graduate, or Grade 10, 11, or 12).", parse_mode="HTML")
 
 # ==========================================
 # 5. ADMIN COMMAND: CLOSE TICKET
