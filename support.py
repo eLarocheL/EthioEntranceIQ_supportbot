@@ -27,7 +27,7 @@ def home():
 # ==========================================
 def get_main_keyboard():
     markup = InlineKeyboardMarkup()
-    markup.row(InlineKeyboardButton("🎓 Request Personal Tutor", callback_data="menu_tutor"))
+    markup.row(InlineKeyboardButton("🎓 የግል አስጠኚ እፈልጋለሁ", callback_data="menu_tutor"))
     markup.row(InlineKeyboardButton("💬 Talk to Admin", callback_data="menu_human"))
     markup.row(
         InlineKeyboardButton("⚡ Quick FAQs", callback_data="menu_faq"),
