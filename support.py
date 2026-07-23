@@ -30,7 +30,7 @@ def get_main_keyboard():
     markup.row(InlineKeyboardButton("🎓 የግል አስጠኚ እፈልጋለሁ", callback_data="menu_tutor"))
     markup.row(InlineKeyboardButton("💬 አስጠኚ ለመሆን", callback_data="menu_human"))
     markup.row(
-        InlineKeyboardButton("⚡Entrance Exam", callback_data="menu_faq"),
+        InlineKeyboardButton("⚡Exam bot", callback_data="menu_faq"),
         InlineKeyboardButton("🎧 Support Team", callback_data="menu_bug")
     )
     return markup
