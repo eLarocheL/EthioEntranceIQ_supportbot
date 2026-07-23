@@ -28,7 +28,7 @@ def get_main_keyboard():
     markup.row(InlineKeyboardButton("💬 Talk to Admin", callback_data="menu_human"))
     markup.row(
         InlineKeyboardButton("⚡ Quick FAQs", callback_data="menu_faq"),
-        InlineKeyboardButton("🐞 Report error", callback_data="menu_bug")
+        InlineKeyboardButton("🎧 Support Team ", callback_data="menu_bug")
     )
     return markup
 
@@ -88,7 +88,8 @@ def handle_menu_clicks(call):
         bot.send_message(call.message.chat.id, tutor_text, parse_mode="HTML")
         
     elif call.data == "menu_bug":
-        bot.send_message(call.message.chat.id, "🐞 <b>Report Bug</b>\n\nPlease describe the error or bug you encountered in detail.", parse_mode="HTML")
+        bot.send_message(call.message.chat.id, "🎧 <b>Support Team</b>\n\nHow can we help you?
+Please describe your issue, question, or request in as much detail as possible. Our support team will review your message and assist you as quickly as possible.", parse_mode="HTML")
         
     elif call.data == "menu_human":
         bot.send_message(call.message.chat.id, "💬 <b>Connecting to Support...</b>\n\nPlease type your message below. An admin will respond shortly.", parse_mode="HTML")
