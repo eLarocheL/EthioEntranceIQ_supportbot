@@ -201,7 +201,7 @@ def send_daily_post():
         
         # Button 2: Secondary CTA for Support/Tutor
         # REPLACE 'YourSupportBotUsername' with your actual support bot username!
-        markup.add(InlineKeyboardButton("👨‍🏫 Request a Personal Tutor", url="https://t.me/YourSupportBotUsername?start=start"))
+        markup.add(InlineKeyboardButton("👨‍🏫 Request a Personal Tutor", url="https://t.me/Ethio_Entrance_IQ?start=start"))
         
         bot.send_message(CHANNEL_ID, daily_message, parse_mode="HTML", reply_markup=markup)
         print("✅ Daily channel post sent successfully!")
