@@ -2,13 +2,22 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import os
 import re
+import threading
+from flask import Flask
 
 # ==========================================
-# 1. CONFIGURATION
+# 1. CONFIGURATION & FLASK DUMMY SERVER
 # ==========================================
 BOT_TOKEN = os.environ.get('SUPPORT_BOT_TOKEN')
 ADMIN_ID = 7365557461  # Replace with your Telegram ID
 bot = telebot.TeleBot(BOT_TOKEN)
+
+# Dummy Flask App to keep Render service active
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is awake!"
 
 # ==========================================
 # 2. AUTOMATED SELF-SERVICE MENU
@@ -65,21 +74,21 @@ def handle_menu_clicks(call):
 # ==========================================
 # 4. ZERO-FRICTION ADMIN REPLIES
 # ==========================================
-# This listens for YOU replying natively to a forwarded message in your Telegram app
+# Listening for admin replies natively in Telegram
 @bot.message_handler(func=lambda message: message.chat.id == ADMIN_ID and message.reply_to_message is not None)
 def automated_admin_reply(message):
     try:
-        # The bot reads the original message you replied to and extracts the hidden User ID
+        # Extract the hidden User ID from the original message text
         original_text = message.reply_to_message.text
         
-        # We use a Regular Expression (re) to find the ID number we embedded earlier
+        # Regex to match the embedded ID
         match = re.search(r'ID:\s*(\d+)', original_text)
         
         if match:
             user_id = int(match.group(1))
             admin_response = message.text
             
-            # Bot automatically routes your text back to the student
+            # Route text back to user
             bot.send_message(user_id, f"👨‍💻 <b>Support Team:</b>\n\n{admin_response}", parse_mode="HTML")
             bot.reply_to(message, "✅ <i>Reply instantly routed to user.</i>", parse_mode="HTML")
         else:
@@ -91,10 +100,8 @@ def automated_admin_reply(message):
 # ==========================================
 # 5. AUTOMATED TICKET ROUTING (USER -> ADMIN)
 # ==========================================
-# Catches all text messages from users and formats them into a "Ticket" for you
 @bot.message_handler(func=lambda message: message.chat.id != ADMIN_ID)
 def forward_to_admin(message):
-    # This specific format embeds the "ID: 123456" so the bot can extract it later
     ticket_format = (
         f"🚨 <b>NEW SUPPORT TICKET</b>\n"
         f"<b>From:</b> {message.from_user.first_name}\n"
@@ -103,13 +110,23 @@ def forward_to_admin(message):
         f"<b>Message:</b>\n{message.text}"
     )
     
-    # Sends the neat ticket to you
+    # Send ticket to admin
     bot.send_message(ADMIN_ID, ticket_format, parse_mode="HTML")
     
-    # Sends an automated confirmation to the user
+    # Confirmation to user
     bot.reply_to(message, "✅ Your message has been logged and sent to our team. We will notify you here when we reply.")
 
 # ==========================================
-if __name__ == "__main__":
+# 6. THREADING EXECUTION (BOT + FLASK)
+# ==========================================
+def run_bot():
     print("Automated Support Bot is running...")
     bot.infinity_polling()
+
+if __name__ == "__main__":
+    # Start the Telegram bot loop in a background thread
+    threading.Thread(target=run_bot, daemon=True).start()
+    
+    # Start the Flask web server listening on the port provided by Render
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
