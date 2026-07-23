@@ -73,7 +73,7 @@ def handle_menu_clicks(call):
     elif call.data == "menu_faq":
         faq_text = (
             "⚡ <b>Quick FAQs</b>\n\n"
-            "• <b>How to access quizzes?</b> Use our main bot @EthioEntranceIQ_bot.\n"
+            "• <b>How to access Exam Questions?</b> Use our main bot @EthioEntranceIQ_bot.\n"
             "• <b>Payment methods?</b> We accept telebirr and direct bank transfers."
         )
         bot.send_message(call.message.chat.id, faq_text, parse_mode="HTML", reply_markup=get_main_keyboard())
@@ -88,7 +88,7 @@ def handle_menu_clicks(call):
         bot.send_message(call.message.chat.id, tutor_text, parse_mode="HTML")
         
     elif call.data == "menu_bug":
-        bot.send_message(call.message.chat.id, "🐞 <b>Report Bug</b>\n\nPlease describe the error or bug you encountered in detail.", parse_mode="HTML")
+        bot.send_message(call.message.chat.id, "🐞 <b>Comment on!</b>\n\nPlease describe the error or bug you encountered in detail.", parse_mode="HTML")
         
     elif call.data == "menu_human":
         bot.send_message(call.message.chat.id, "💬 <b>Connecting to Support...</b>\n\nPlease type your message below. An admin will respond shortly.", parse_mode="HTML")
