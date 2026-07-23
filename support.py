@@ -17,62 +17,121 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Bot is awake!"
+    return "EthioEntranceIQ Support Bot is awake!"
 
 # ==========================================
-# 2. AUTOMATED SELF-SERVICE MENU
+# 2. KEYBOARDS & CONSTANTS (Option 1 Aesthetic)
+# ==========================================
+def get_main_keyboard():
+    markup = InlineKeyboardMarkup()
+    markup.row(InlineKeyboardButton("🎓 Request Tutor", callback_data="menu_tutor"))
+    markup.row(InlineKeyboardButton("💬 Talk to Admin", callback_data="menu_human"))
+    markup.row(
+        InlineKeyboardButton("⚡ Quick FAQs", callback_data="menu_faq"),
+        InlineKeyboardButton("🐞 Report Bug", callback_data="menu_bug")
+    )
+    return markup
+
+def get_restart_keyboard():
+    markup = InlineKeyboardMarkup()
+    markup.row(InlineKeyboardButton("➕ Start New Chat", callback_data="menu_start"))
+    return markup
+
+MAIN_MENU_TEXT = (
+    "⚡ <b>EthioEntranceIQ Support</b>\n\n"
+    "Select an option below for immediate routing:"
+)
+
+# ==========================================
+# 3. AUTOMATED SELF-SERVICE MENU
 # ==========================================
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    # Build an interactive Inline Keyboard menu
-    markup = InlineKeyboardMarkup()
-    markup.row(InlineKeyboardButton("👨‍🏫 Request Personal Tutor", callback_data="menu_tutor"))
-    markup.row(
-        InlineKeyboardButton("🐛 Report Bug", callback_data="menu_bug"),
-        InlineKeyboardButton("❓ FAQs", callback_data="menu_faq")
+    bot.send_message(
+        message.chat.id, 
+        MAIN_MENU_TEXT, 
+        reply_markup=get_main_keyboard(), 
+        parse_mode="HTML"
     )
-    markup.row(InlineKeyboardButton("💬 Talk to a Human", callback_data="menu_human"))
-    
-    welcome_text = (
-        "👋 <b>Welcome to EthioEntranceIQ Support!</b>\n\n"
-        "I am your automated assistant. Please choose an option below so I can route your request instantly:"
-    )
-    bot.send_message(message.chat.id, welcome_text, reply_markup=markup, parse_mode="HTML")
 
 # ==========================================
-# 3. HANDLE AUTOMATED BUTTON CLICKS
+# 4. HANDLE AUTOMATED BUTTON CLICKS
 # ==========================================
 @bot.callback_query_handler(func=lambda call: call.data.startswith("menu_"))
 def handle_menu_clicks(call):
     # Acknowledge the button click to stop the loading animation on the user's screen
     bot.answer_callback_query(call.id)
     
-    if call.data == "menu_faq":
-        faq_text = (
-            "❓ <b>Frequently Asked Questions</b>\n\n"
-            "<b>Q: How do I take a quiz?</b>\n"
-            "A: Go to our main bot and send /start.\n\n"
-            "<b>Q: Is the bot free?</b>\n"
-            "A: Yes, all standard quizzes are currently free!"
+    if call.data == "menu_start":
+        bot.send_message(
+            call.message.chat.id, 
+            MAIN_MENU_TEXT, 
+            reply_markup=get_main_keyboard(), 
+            parse_mode="HTML"
         )
-        bot.send_message(call.message.chat.id, faq_text, parse_mode="HTML")
+        
+    elif call.data == "menu_faq":
+        faq_text = (
+            "⚡ <b>Quick FAQs</b>\n\n"
+            "• <b>How to access quizzes?</b> Use our main bot @EthioEntranceIQ_bot.\n"
+            "• <b>Payment methods?</b> We accept telebirr and direct bank transfers."
+        )
+        bot.send_message(call.message.chat.id, faq_text, parse_mode="HTML", reply_markup=get_main_keyboard())
         
     elif call.data == "menu_tutor":
         tutor_text = (
-            "👨‍🏫 <b>Tutor Request</b>\n\n"
-            "Please type your Grade, Subject, and what you need help with. "
-            "I will automatically forward it to our tutor matching team!"
+            "🎓 <b>Tutor Matching</b>\n\n"
+            "Please reply to this message with the following details so we can find your ideal tutor:\n\n"
+            "🏫 <b>Grade Level:</b> \n"
+            "📍 <b>Address:</b> "
         )
         bot.send_message(call.message.chat.id, tutor_text, parse_mode="HTML")
         
     elif call.data == "menu_bug":
-        bot.send_message(call.message.chat.id, "🐛 Please describe the bug you found, and I will create an automated ticket for the developers.")
+        bot.send_message(call.message.chat.id, "🐞 <b>Report Bug</b>\n\nPlease describe the error or bug you encountered in detail.", parse_mode="HTML")
         
     elif call.data == "menu_human":
-        bot.send_message(call.message.chat.id, "💬 Please type your message below. An admin will reply to you shortly.")
+        bot.send_message(call.message.chat.id, "💬 <b>Connecting to Support...</b>\n\nPlease type your message below. An admin will respond shortly.", parse_mode="HTML")
 
 # ==========================================
-# 4. ZERO-FRICTION ADMIN REPLIES
+# 5. ADMIN COMMAND: CLOSE TICKET
+# ==========================================
+@bot.message_handler(commands=['close'])
+def close_ticket(message):
+    # Only allow the admin to use this command
+    if message.chat.id != ADMIN_ID:
+        return
+        
+    try:
+        # Extract the user ID from the command (e.g., /close 123456789)
+        parts = message.text.split()
+        if len(parts) < 2:
+            bot.reply_to(message, "⚠️ Usage: `/close <user_chat_id>`", parse_mode="Markdown")
+            return
+            
+        target_user_id = int(parts[1])
+        
+        close_text = (
+            "✅ <b>Ticket Closed</b>\n\n"
+            "Your request has been resolved. If you need anything else, feel free to start a new chat anytime."
+        )
+        
+        # Send closing message to the user with the restart button
+        bot.send_message(
+            target_user_id, 
+            close_text, 
+            parse_mode="HTML", 
+            reply_markup=get_restart_keyboard()
+        )
+        
+        # Confirm action to the admin
+        bot.reply_to(message, f"✅ Ticket for user `{target_user_id}` closed successfully.", parse_mode="Markdown")
+        
+    except Exception as e:
+        bot.reply_to(message, f"⚠️ Failed to close chat: {str(e)}")
+
+# ==========================================
+# 6. ZERO-FRICTION ADMIN REPLIES
 # ==========================================
 # Listening for admin replies natively in Telegram
 @bot.message_handler(func=lambda message: message.chat.id == ADMIN_ID and message.reply_to_message is not None)
@@ -98,9 +157,9 @@ def automated_admin_reply(message):
         bot.reply_to(message, f"⚠️ Error sending reply: {e}")
 
 # ==========================================
-# 5. AUTOMATED TICKET ROUTING (USER -> ADMIN)
+# 7. AUTOMATED TICKET ROUTING (USER -> ADMIN)
 # ==========================================
-@bot.message_handler(func=lambda message: message.chat.id != ADMIN_ID)
+@bot.message_handler(func=lambda message: message.chat.id != ADMIN_ID and not message.text.startswith('/'))
 def forward_to_admin(message):
     ticket_format = (
         f"🚨 <b>NEW SUPPORT TICKET</b>\n"
@@ -117,7 +176,7 @@ def forward_to_admin(message):
     bot.reply_to(message, "✅ Your message has been logged and sent to our team. We will notify you here when we reply.")
 
 # ==========================================
-# 6. THREADING EXECUTION (BOT + FLASK)
+# 8. THREADING EXECUTION (BOT + FLASK)
 # ==========================================
 def run_bot():
     print("Automated Support Bot is running...")
