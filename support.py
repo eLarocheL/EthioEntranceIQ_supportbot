@@ -178,40 +178,35 @@ def forward_to_admin(message):
     bot.reply_to(message, "✅ Your message has been logged and sent to our team. We will notify you here when we reply.")
 
 # ==========================================
-# 8. DAILY CHANNEL POST SCHEDULER (NEW)
+# ==========================================
+# 8. DAILY CHANNEL POST SCHEDULER (HIGH CONVERSION)
 # ==========================================
 def send_daily_post():
     """The message that gets posted to the channel every day."""
     try:
         daily_message = (
-            "🚀 <b>Need Help Passing the Entrance Exam?</b>\n\n"
-            "Our Support Team is online and ready to assist you!\n\n"
-            "✅ Request a Personal Tutor\n"
-            "✅ Get Help with Quizzes\n"
-            "✅ Talk to a Human Agent\n\n"
-            "👇 Click below to start a chat with our Support Bot!"
+            "🔥 <b>CRUSH YOUR ENTRANCE EXAM & WIN EXCLUSIVE PRIZES!</b> 🔥\n\n"
+            "Don't guess your way to university. Prove you have what it takes and start dominating the leaderboards with <b>@EthioEntranceIQ_bot</b>! 🧠💯\n\n"
+            "🎯 <b>SMART PRACTICE:</b> Real past papers, customized mock exams, and instant feedback for Grade 9 - 12 (Natural & Social Sciences).\n"
+            "🏆 <b>COMPETE & WIN:</b> Join the weekly battles! Crush the timed challenges, rank #1 on the live leaderboards, and unlock massive rewards! 🎁💸\n\n"
+            "👇 <b>DON'T GET LEFT BEHIND. CLICK BELOW TO START!</b> 👇\n\n"
+            "<i>Need an edge? Our expert Personal Tutors and live support team are waiting to help you ace your weak subjects!</i>"
         )
         
-        # Adding a button that links directly to your support bot
+        # Adding TWO buttons for maximum click-through rates
         markup = InlineKeyboardMarkup()
-        # REPLACE 'YourSupportBotUsername' with the actual username of your support bot!
-        markup.add(InlineKeyboardButton("💬 Contact Support", url="https://t.me/YourSupportBotUsername?start=start"))
+        
+        # Button 1: Massive CTA for the Main Bot
+        markup.add(InlineKeyboardButton("🎮 PLAY, LEARN & WIN PRIZES NOW!", url="https://t.me/EthioEntranceIQ_bot"))
+        
+        # Button 2: Secondary CTA for Support/Tutor
+        # REPLACE 'YourSupportBotUsername' with your actual support bot username!
+        markup.add(InlineKeyboardButton("👨‍🏫 Request a Personal Tutor", url="https://t.me/YourSupportBotUsername?start=start"))
         
         bot.send_message(CHANNEL_ID, daily_message, parse_mode="HTML", reply_markup=markup)
         print("✅ Daily channel post sent successfully!")
     except Exception as e:
-        print(f"⚠️ Failed to send daily post: {e}")
-
-def run_scheduler():
-    """Runs continuously in the background to check the time."""
-    # 09:00 UTC is exactly 12:00 PM (Noon) EAT.
-    schedule.every().day.at("09:00").do(send_daily_post) 
-    
-    while True:
-        schedule.run_pending()
-        time.sleep(60) # Check every minute
-
-# ==========================================
+        print(f"⚠️ Failed to send daily post: {e}")# ==========================================
 # 9. THREADING EXECUTION (BOT + FLASK + SCHEDULER)
 # ==========================================
 def run_bot():
