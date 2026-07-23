@@ -93,7 +93,7 @@ def handle_menu_clicks(call):
         bot.send_message(call.message.chat.id, "🎧 <b>Support Team</b>\n\n Become a Tutor", parse_mode="HTML")
         
     elif call.data == "menu_human":
-        bot.send_message(call.message.chat.id, "💬 <b>Connecting to Support...</b>\n\nTo apply as a tutor, please enter your address and your education level (University Student, Graduate, or Grade 10, 11, or 12).", parse_mode="HTML")
+        bot.send_message(call.message.chat.id, "💬 <b>Connecting to Support...</b>\n\nTo apply as a tutor, please enter your address and your education level.", parse_mode="HTML")
 
 # ==========================================
 # 5. ADMIN COMMAND: CLOSE TICKET
