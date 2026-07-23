@@ -3,6 +3,8 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import os
 import re
 import threading
+import time
+import schedule
 from flask import Flask
 
 # ==========================================
@@ -10,6 +12,7 @@ from flask import Flask
 # ==========================================
 BOT_TOKEN = os.environ.get('SUPPORT_BOT_TOKEN')
 ADMIN_ID = 7365557461  # Replace with your Telegram ID
+CHANNEL_ID = "@Ethio_Entrance_IQ" # Your Telegram Channel
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # Dummy Flask App to keep Render service active
@@ -176,7 +179,41 @@ def forward_to_admin(message):
     bot.reply_to(message, "✅ Your message has been logged and sent to our team. We will notify you here when we reply.")
 
 # ==========================================
-# 8. THREADING EXECUTION (BOT + FLASK)
+# 8. DAILY CHANNEL POST SCHEDULER (NEW)
+# ==========================================
+def send_daily_post():
+    """The message that gets posted to the channel every day."""
+    try:
+        daily_message = (
+            "🚀 <b>Need Help Passing the Entrance Exam?</b>\n\n"
+            "Our Support Team is online and ready to assist you!\n\n"
+            "✅ Request a Personal Tutor\n"
+            "✅ Get Help with Quizzes\n"
+            "✅ Talk to a Human Agent\n\n"
+            "👇 Click below to start a chat with our Support Bot!"
+        )
+        
+        # Adding a button that links directly to your support bot
+        markup = InlineKeyboardMarkup()
+        # REPLACE 'YourSupportBotUsername' with the actual username of your support bot!
+        markup.add(InlineKeyboardButton("💬 Contact Support", url="https://t.me/YourSupportBotUsername?start=start"))
+        
+        bot.send_message(CHANNEL_ID, daily_message, parse_mode="HTML", reply_markup=markup)
+        print("✅ Daily channel post sent successfully!")
+    except Exception as e:
+        print(f"⚠️ Failed to send daily post: {e}")
+
+def run_scheduler():
+    """Runs continuously in the background to check the time."""
+    # 09:00 UTC is exactly 12:00 PM (Noon) EAT.
+    schedule.every().day.at("09:00").do(send_daily_post) 
+    
+    while True:
+        schedule.run_pending()
+        time.sleep(60) # Check every minute
+
+# ==========================================
+# 9. THREADING EXECUTION (BOT + FLASK + SCHEDULER)
 # ==========================================
 def run_bot():
     print("Automated Support Bot is running...")
@@ -185,6 +222,9 @@ def run_bot():
 if __name__ == "__main__":
     # Start the Telegram bot loop in a background thread
     threading.Thread(target=run_bot, daemon=True).start()
+    
+    # Start the Daily Scheduler loop
+    threading.Thread(target=run_scheduler, daemon=True).start()
     
     # Start the Flask web server listening on the port provided by Render
     port = int(os.environ.get('PORT', 10000))
