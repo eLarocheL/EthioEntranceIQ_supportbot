@@ -7,7 +7,7 @@ import re
 # 1. CONFIGURATION
 # ==========================================
 BOT_TOKEN = os.environ.get('SUPPORT_BOT_TOKEN')
-ADMIN_ID = 123456789  # Replace with your Telegram ID
+ADMIN_ID = 7365557461  # Replace with your Telegram ID
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # ==========================================
