@@ -202,7 +202,7 @@ def send_daily_post():
         print(f"⚠️ Failed to send daily post: {e}")
 
 # SET THE SCHEDULE TIME HERE (24-hour format)
-schedule.every().day.at("18:00").do(send_daily_post)
+schedule.every().day.at("18:02").do(send_daily_post)
 
 def run_scheduler():
     """Continuously checks for scheduled tasks and runs them."""
