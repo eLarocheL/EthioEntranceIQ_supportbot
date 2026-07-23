@@ -192,10 +192,14 @@ def send_daily_post():
             "<i>Need an edge? Our expert Personal Tutors and live support team are waiting to help you ace your weak subjects!</i>"
         )
         
+        # Adding TWO buttons for maximum click-through rates
         markup = InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("🎮 PLAY, LEARN & WIN PRIZES NOW!", url="https://t.me/EthioEntranceIQ_bot"))
-        markup.add(InlineKeyboardButton("👨‍🏫 Request a Personal Tutor", url="https://t.me/Ethio_Entrance_IQ?start=start"))
         
+        # Button 1: Massive CTA for the Main Bot
+        markup.add(InlineKeyboardButton("🎮 PLAY, LEARN & WIN PRIZES NOW!", url="https://t.me/EthioEntranceIQ_bot"))
+        
+        # Button 2: Secondary CTA for Support/Tutor (Updated with your actual bot username)
+        markup.add(InlineKeyboardButton("👨‍🏫 Request a Personal Tutor", url="https://t.me/EthioEntranceIQ_Support_bot?start=start"))        
         bot.send_message(CHANNEL_ID, daily_message, parse_mode="HTML", reply_markup=markup)
         print("✅ Daily channel post sent successfully!")
     except Exception as e:
