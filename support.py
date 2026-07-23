@@ -178,8 +178,7 @@ def forward_to_admin(message):
     bot.reply_to(message, "✅ Your message has been logged and sent to our team. We will notify you here when we reply.")
 
 # ==========================================
-# ==========================================
-# 8. DAILY CHANNEL POST SCHEDULER (HIGH CONVERSION)
+# 8. DAILY CHANNEL POST SCHEDULER
 # ==========================================
 def send_daily_post():
     """The message that gets posted to the channel every day."""
@@ -193,20 +192,25 @@ def send_daily_post():
             "<i>Need an edge? Our expert Personal Tutors and live support team are waiting to help you ace your weak subjects!</i>"
         )
         
-        # Adding TWO buttons for maximum click-through rates
         markup = InlineKeyboardMarkup()
-        
-        # Button 1: Massive CTA for the Main Bot
         markup.add(InlineKeyboardButton("🎮 PLAY, LEARN & WIN PRIZES NOW!", url="https://t.me/EthioEntranceIQ_bot"))
-        
-        # Button 2: Secondary CTA for Support/Tutor
-        # REPLACE 'YourSupportBotUsername' with your actual support bot username!
         markup.add(InlineKeyboardButton("👨‍🏫 Request a Personal Tutor", url="https://t.me/Ethio_Entrance_IQ?start=start"))
         
         bot.send_message(CHANNEL_ID, daily_message, parse_mode="HTML", reply_markup=markup)
         print("✅ Daily channel post sent successfully!")
     except Exception as e:
-        print(f"⚠️ Failed to send daily post: {e}")# ==========================================
+        print(f"⚠️ Failed to send daily post: {e}")
+
+# SET THE SCHEDULE TIME HERE (24-hour format)
+schedule.every().day.at("12:00").do(send_daily_post)
+
+def run_scheduler():
+    """Continuously checks for scheduled tasks and runs them."""
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+# ==========================================
 # 9. THREADING EXECUTION (BOT + FLASK + SCHEDULER)
 # ==========================================
 def run_bot():
