@@ -42,7 +42,7 @@ def get_restart_keyboard():
 
 MAIN_MENU_TEXT = (
     "⚡ <b>EthioEntranceIQ Support</b>\n\n"
-    "Select an option below for immediate routing:"
+    "አስጠኚ ይፈልጋሉ ወይስ አስጠኚ ለመሆን ይፈልጋሉ??:"
 )
 
 # ==========================================
